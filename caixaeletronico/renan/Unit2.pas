@@ -17,10 +17,11 @@ type
     fQtdCedulas50: Integer;
     fQtdCedulas100: Integer;
     fValorFaltanteParaRetirada: Integer;
-  public
     procedure AddCedula(ValorCedula: TValorCedula; qtde: Integer = 1);
-    function GetValorTotal: Integer;
-    function ToString: string;
+    procedure TentaCedula(ValorCedula: TValorCedula);
+  public
+    procedure CalculaNotas;
+    function ToString: string; override;
     constructor Create(ValorDeRetirada: Integer);
   end;
 
@@ -30,20 +31,25 @@ implementation
 { TCaixaEletronico }
 
 procedure TCaixaEletronico.AddCedula(ValorCedula: TValorCedula; qtde: Integer);
-var
-  I: Integer;
 begin
-  for I := 1 to qtde do
-  begin
-    case ValorCedula of
-      tvc2:Inc(fQtdCedulas2);
-      tvc5: Inc(fQtdCedulas5);
-      tvc10: Inc(fQtdCedulas10);
-      tvc20: Inc(fQtdCedulas20);
-      tvc50: Inc(fQtdCedulas50);
-      tvc100: Inc(fQtdCedulas100);
-    end;
+  case ValorCedula of
+    tvc2: fQtdCedulas2 := fQtdCedulas2 + qtde;
+    tvc5: fQtdCedulas5 := fQtdCedulas5 + qtde;
+    tvc10: fQtdCedulas10 := fQtdCedulas10 + qtde;
+    tvc20: fQtdCedulas20 := fQtdCedulas20 + qtde;
+    tvc50: fQtdCedulas50 := fQtdCedulas50 + qtde;
+    tvc100: fQtdCedulas100 := fQtdCedulas100 + qtde;
   end;
+end;
+
+procedure TCaixaEletronico.CalculaNotas;
+begin
+  Self.TentaCedula(tvc5);
+  Self.TentaCedula(tvc100);
+  Self.TentaCedula(tvc50);
+  Self.TentaCedula(tvc20);
+  Self.TentaCedula(tvc10);
+  Self.TentaCedula(tvc2);
 end;
 
 constructor TCaixaEletronico.Create(ValorDeRetirada: Integer);
@@ -54,16 +60,28 @@ begin
   fQtdCedulas20 := 0;
   fQtdCedulas50 := 0;
   fQtdCedulas100 := 0;
+  fValorFaltanteParaRetirada := ValorDeRetirada;
 end;
 
-function TCaixaEletronico.GetValorTotal: Integer;
+procedure TCaixaEletronico.TentaCedula(ValorCedula: TValorCedula);
+var
+  vlrAux: Integer;
 begin
-  Result := (2 * fQtdCedulas2) +
-            (5 * fQtdCedulas5) +
-            (10 * fQtdCedulas10) +
-            (20 * fQtdCedulas20) +
-            (50 * fQtdCedulas50) +
-            (100 * fQtdCedulas100);
+  vlrAux := 0;
+  if (ValorCedula = tvc5) then
+  begin
+    if ((fValorFaltanteParaRetirada mod 2) > 0) then
+    begin
+      Self.AddCedula(tvc5);
+      vlrAux := 1;
+    end;
+  end
+  else
+  begin
+    vlrAux := Trunc(fValorFaltanteParaRetirada/Ord(ValorCedula));
+    Self.AddCedula(ValorCedula, vlrAux);
+  end;
+  fValorFaltanteParaRetirada := fValorFaltanteParaRetirada - (Ord(ValorCedula) * vlrAux);
 end;
 
 function TCaixaEletronico.ToString: string;

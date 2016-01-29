@@ -35,45 +35,18 @@ end;
 procedure TForm1.QuantidadeDeNotas(valorRequirido: Integer);
 var
   CaixaEletronico: TCaixaEletronico;
-  vlrAux: Integer;
 begin
+  if ((valorRequirido < 4) and (valorRequirido <> 2)) then
+  begin
+    ShowMessage('Valor inválido');
+    Exit;
+  end;
+
   CaixaEletronico := TCaixaEletronico.Create(valorRequirido);
   try
-    if ((valorRequirido < 4) and (valorRequirido <> 2)) then
-    begin
-      ShowMessage('Valor inválido');
-      Exit;
-    end;
-
-    if (valorRequirido mod 2) > 0 then
-    begin
-      CaixaEletronico.AddCedula(tvc5);
-      valorRequirido := valorRequirido - 5;
-    end;
-
-    vlrAux := Trunc(valorRequirido/100);
-    CaixaEletronico.AddCedula(tvc100, vlrAux);
-    valorRequirido := valorRequirido - (100 * vlrAux);
-
-    vlrAux := Trunc(valorRequirido/50);
-    CaixaEletronico.AddCedula(tvc50);
-    valorRequirido := valorRequirido - (50 * vlrAux);
-
-    vlrAux := Trunc(valorRequirido/20);
-    CaixaEletronico.AddCedula(tvc20, vlrAux);
-    valorRequirido := valorRequirido - (20 * vlrAux);
-
-    vlrAux := Trunc(valorRequirido/10);
-    CaixaEletronico.AddCedula(tvc10, vlrAux);
-    valorRequirido := valorRequirido - (10 * vlrAux);
-
-    vlrAux := Trunc(valorRequirido/2);
-    CaixaEletronico.AddCedula(tvc2, vlrAux);
-    valorRequirido := valorRequirido - (2 * vlrAux);
-
+    CaixaEletronico.CalculaNotas;
     ShowMessage(CaixaEletronico.ToString);
     Edit1.SetFocus;
-
   finally
     CaixaEletronico.Free;
   end;
